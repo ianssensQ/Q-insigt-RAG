@@ -12,8 +12,8 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - app-network
   
@@ -24,8 +24,8 @@ services:
     ports:
       - 5050:80
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     networks:
       - app-network
     depends_on:
@@ -36,9 +36,9 @@ services:
     hostname: rabbitmq
     restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648"
     volumes:
       - ./rabbitmq:/var/lib/rabbitmq
     ports:
@@ -62,7 +62,7 @@ services:
     networks:
       - app-network
     environment:
-      - PYTHONPATH=/app
+      PYTHONPATH: /app
     depends_on:
       - database
 
@@ -77,9 +77,9 @@ services:
     networks:
       - app-network
     environment:
-      - PYTHONPATH=/app
-      - CONFIRMATION_CODE=${CONFIRMATION_CODE}
-      
+      PYTHONPATH: /app
+      CONFIRMATION_CODE: "31955"
+
   workers:
     build: ./app/
     env_file:
@@ -88,9 +88,9 @@ services:
       - ./app:/app
     command: ["/wait_for_rabbitmq.sh", "rabbitmq", "5672", "python", "-m", "services.rabbit.workers.all_summ_workers"]
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - PYTHONPATH=/app
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      PYTHONPATH: /app
     depends_on:
       - rabbitmq
     networks:
@@ -111,17 +111,17 @@ services:
     networks:
       - app-network
     environment:
-      - PYTHONPATH=/app
+      PYTHONPATH: /app
 
 
   etcd:
     container_name: milvus-etcd
     image: quay.io/coreos/etcd:v3.5.5
     environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
@@ -137,8 +137,8 @@ services:
     container_name: milvus-minio
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     environment:
-      MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
     ports:
       - "9001:9001"
       - "9000:9000"
@@ -152,6 +152,7 @@ services:
       retries: 3
     networks:
       - app-network
+
 
   standalone:
     container_name: milvus-standalone

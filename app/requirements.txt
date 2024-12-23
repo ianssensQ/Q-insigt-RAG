@@ -37,4 +37,5 @@ accelerate == 0.32.1
 
 pymilvus
 langchain_community
+langchain-huggingface
 sentence_transformers

@@ -14,7 +14,7 @@ async def start():
         await client.connect()
         if not await client.is_user_authorized():
             print("Пользователь не авторизован. Попытка авторизации...")
-            
+            print(confirmation_code)
             if confirmation_code:
                 await client.send_code_request(phone_number)
                 await client.sign_in(phone_number, confirmation_code)

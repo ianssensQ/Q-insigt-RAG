@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import signal
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
@@ -21,6 +22,16 @@ async def set_commands(bot: Bot):
 bot = Bot(token=config('BOT_TOKEN'))
 
 
+async def shutdown(dp: Dispatcher, bot: Bot):
+    """
+    Функция для завершения работы бота и диспетчера.
+    """
+    logging.info("Shutting down dispatcher and closing bot session...")
+    await dp.fsm.storage.close()
+    await dp.fsm.storage.wait_closed()
+    await bot.session.close()
+
+
 async def main(bot):
     logging.basicConfig(
         level=logging.INFO,
@@ -34,9 +45,31 @@ async def main(bot):
                        base_channels.router,
                        ml_logic.router)
 
-    await set_commands(bot)
-    await dp.start_polling(bot)
+    dp_task = asyncio.create_task(dp.start_polling(bot))
+
+    loop = asyncio.get_event_loop()
+    stop_event = asyncio.Event()
+
+    def stop_signal_handler(*_):
+        logging.info("Received stop signal, shutting down...")
+        stop_event.set()
+
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, stop_signal_handler)
+
+    await stop_event.wait()
+
+    dp_task.cancel()
+    try:
+        await dp_task
+    except asyncio.CancelledError:
+        pass
+
+    await shutdown(dp, bot)
 
 
 if __name__ == '__main__':
-    asyncio.run(main(bot))
+    try:
+        asyncio.run(main(bot))
+    except KeyboardInterrupt:
+        logging.info("Bot stopped manually")
