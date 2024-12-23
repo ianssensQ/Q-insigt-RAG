@@ -23,11 +23,15 @@ class HybridRetriever:
         self.embedding_function = dense_embedding_function
         self.client = MilvusClient(uri=uri)
 
-    def build_collection(self):
+    def build_collection(self, recreation=False):
         dense_dim = len(self.embedding_function.embed_query('test'))
 
-        if self.client.has_collection(collection_name=self.collection_name):
+        if self.client.has_collection(collection_name=self.collection_name) and recreation:
             self.client.drop_collection(collection_name=self.collection_name)
+            print("Коллекция уже есть и будет пересоздана")
+        elif self.client.has_collection(collection_name=self.collection_name) and not recreation:
+            print("Коллекция уже есть и не пересоздаётся")
+            return "Collection already exists"
 
         tokenizer_params = {
             "tokenizer": "standard",
@@ -93,6 +97,7 @@ class HybridRetriever:
             schema=schema,
             index_params=index_params,
         )
+        print("Создали новую коллекцию  в Milvus")
 
     def insert_data(self, metadata):
         embedding = self.embedding_function.embed_documents([metadata['message']])
@@ -107,8 +112,11 @@ class HybridRetriever:
             "message",
             "chat_name",
         ]
-        filter_expression = f"chat_name in [{", ".join(f'\"{name}\"' for name in chat_names)}]"
-        
+        # filter_expression = f"chat_name in [{", ".join(f'\"{name}\"' for name in chat_names)}]"
+        # filter_expression = f"chat_name in [{', '.join(f'\"{name}\"' for name in chat_names)}]"
+        # filter_expression = f"chat_name in [{', '.join(f'"{name}"' for name in chat_names)}]"
+        filter_expression = f"chat_name in [{', '.join(repr(name) for name in chat_names)}]"
+
         if mode in ["dense", "hybrid"]:
             embedding = self.embedding_function.embed_query(query)
             dense_vec = embedding
