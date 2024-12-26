@@ -12,7 +12,9 @@ import nltk
 from nltk.corpus import stopwords
 
 # Загружаем стоп-слова для русского языка
-nltk.download("stopwords")
+# nltk.download("stopwords")
+nltk.data.path.append("/usr/local/share/nltk_data")
+
 russian_stopwords = stopwords.words("russian")
 
 # Класс для гибридного поиска в milvus

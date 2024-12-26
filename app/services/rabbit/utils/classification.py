@@ -24,6 +24,8 @@ classifier = joblib.load(model_path)
 """nltk.download('punkt')
 nltk.download('stopwords')"""
 
+nltk.data.path.append("/usr/local/share/nltk_data")
+
 
 class Cleaner:
     def __init__(self):

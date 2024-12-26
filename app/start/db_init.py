@@ -21,5 +21,5 @@ def drop_db():
 if __name__ == "__main__":
     # drop_db()
     init_db()
-    retriver = HybridRetriever(uri=os.getenv("URI_MILVUS"), dense_embedding_function=get_embedding_model())
-    retriver.build_collection()
+    # retriver = HybridRetriever(uri=os.getenv("URI_MILVUS"), dense_embedding_function=get_embedding_model())
+    # retriver.build_collection()

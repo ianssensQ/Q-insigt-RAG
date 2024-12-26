@@ -39,4 +39,5 @@ logs/
 data/
 models/
 /rabbitmq
+/pgadmin_data
 *.session
