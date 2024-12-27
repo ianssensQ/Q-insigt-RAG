@@ -2,7 +2,6 @@ import asyncio
 import os
 from pathlib import Path
 
-from langchain_community.chat_models import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_mistralai import ChatMistralAI
@@ -15,15 +14,10 @@ from app.services.Milvus.milvus_retriver import HybridRetriever
 class AnswerGenerator:
     def __init__(self, retriever: HybridRetriever):
         self.retriever = retriever
-        # self.llm = ChatMistralAI(
-        #     model='gpt-4o-mini',
-        #     temperature=0.7,
-        #     openai_api_key=os.getenv('openai_api_key')
-        # )
         self.llm = ChatMistralAI(
-            model='ministral-8b-latest',
-            temperature=0,
-            mistral_api_key='W2LIYnvdAAbIMJBiqajgxbthjbhSrDG4'
+            model='gpt-4o-mini',
+            temperature=0.7,
+            openai_api_key=os.getenv('openai_api_key')
         )
 
         prompts_dir = Path(__file__).parent / 'prompts'
