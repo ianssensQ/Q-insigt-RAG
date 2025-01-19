@@ -99,8 +99,12 @@ async def main():
     )
 
     generator = AnswerGenerator(retriever)
-    ans = await generator.generate_answer('Сегодня 28 ноября. Какая погода будет 10 декабря?', chat_names=['Погода'], retriever_params={'k': 1})
-    print(ans)
+    answer = await generator.generate_answer(
+        'Сегодня 28 ноября. Какая погода будет 10 декабря?',
+        chat_names=['Погода'],
+        retriever_params={'k': 1}
+    )
+    return answer
 
 if __name__ == '__main__':
     asyncio.run(main())
