@@ -4,7 +4,7 @@ from pathlib import Path
 
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_mistralai import ChatMistralAI
+from langchain_openai import ChatOpenAI
 from typing import Dict, List
 
 
@@ -14,7 +14,7 @@ from app.services.Milvus.milvus_retriver import HybridRetriever
 class AnswerGenerator:
     def __init__(self, retriever: HybridRetriever):
         self.retriever = retriever
-        self.llm = ChatMistralAI(
+        self.llm = ChatOpenAI(
             model='gpt-4o-mini',
             temperature=0.7,
             openai_api_key=os.getenv('openai_api_key')
