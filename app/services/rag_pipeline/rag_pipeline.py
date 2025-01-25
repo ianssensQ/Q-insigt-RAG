@@ -16,7 +16,7 @@ class AnswerGenerator:
         self.retriever = retriever
         self.llm = ChatOpenAI(
             model='gpt-4o-mini',
-            temperature=0.7,
+            temperature=0.05,
             openai_api_key=os.getenv('openai_api_key')
         )
 
@@ -36,8 +36,6 @@ class AnswerGenerator:
         context = "\n".join(
             f"# Чат: {doc['chat_name']}\n# Сообщение: {doc['message']}\n" for doc in retrieved_documents
         )
-
-        print(context)
 
         prompt = PromptTemplate(
             template=self.generation_prompt_text,
