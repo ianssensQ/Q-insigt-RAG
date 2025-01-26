@@ -1,14 +1,14 @@
 import asyncio
 import os
+import warnings
 from pathlib import Path
 
 from langchain_core.prompts import PromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
-
-from app.services.Milvus.milvus_retriver import HybridRetriever
+from .milvus_retriver import HybridRetriever
 
 
 class AnswerGenerator:
@@ -17,13 +17,19 @@ class AnswerGenerator:
         self.llm = ChatOpenAI(
             model='gpt-4o-mini',
             temperature=0.05,
-            openai_api_key=os.getenv('openai_api_key')
+            openai_api_key=os.getenv('OPENAI_API_KEY')
         )
 
         prompts_dir = Path(__file__).parent / 'prompts'
-        self.generation_prompt_text = open(str(prompts_dir / 'context_answer_generation.txt'), 'r').read()
+        with open(str(prompts_dir / 'context_answer_generation.txt'), 'r') as prompt_file:
+            self.generation_prompt_text =  prompt_file.read()
 
-    async def generate_answer(self, user_query: str, chat_names: List[str], retriever_params: Dict = None):
+    async def generate_answer(
+        self,
+        user_query: str,
+        chat_names: List[str],
+        retriever_params: Dict = None
+    ) -> Tuple[str, List[str]]:
         if retriever_params is None:
             retriever_params = {}
 
@@ -33,9 +39,13 @@ class AnswerGenerator:
             **retriever_params
         )
 
-        context = "\n".join(
+        context_str = "\n".join(
             f"# Чат: {doc['chat_name']}\n# Сообщение: {doc['message']}\n" for doc in retrieved_documents
         )
+        context_list = [doc['message'] for doc in retrieved_documents]
+
+        if context_str == '':
+            warnings.warn("The retrieved context_str is empty", UserWarning)
 
         prompt = PromptTemplate(
             template=self.generation_prompt_text,
@@ -49,11 +59,11 @@ class AnswerGenerator:
                 'input_language': 'Russian',
                 'output_language': 'Russian',
                 'user_query': user_query,
-                'context': context
+                'context': context_str
             }
         )
 
-        return chain_output.content
+        return chain_output.content, context_list
 
 
 async def main():
@@ -105,4 +115,4 @@ async def main():
     return answer
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    print(asyncio.run(main()))
